@@ -3,13 +3,14 @@ import datetime
 import math
 import os
 
+import execution_context
 import folder_paths as comfy_paths
 
 from .categories import NodeCategories
 from .shared import hashed_as_strings, DreamStateFile
 from .dreamtypes import LogEntry, SharedTypes, FrameCounter
 
-_logfile_state = DreamStateFile("logging")
+# _logfile_state = DreamStateFile("logging")
 
 
 class DreamJoinLog:
@@ -146,10 +147,10 @@ class DreamLogFile:
     FUNCTION = "write"
 
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls, context: execution_context.ExecutionContext):
         return {
             "required": SharedTypes.frame_counter | {
-                "log_directory": ("STRING", {"default": comfy_paths.output_directory}),
+                "log_directory": ("STRING", {"default": comfy_paths.get_output_directory(context.user_hash)}),
                 "log_filename": ("STRING", {"default": "dreamlog.txt"}),
                 "stdout": ("BOOLEAN", {"default": True}),
                 "active": ("BOOLEAN", {"default": True}),
@@ -165,17 +166,20 @@ class DreamLogFile:
                 "entry_6": (LogEntry.ID,),
                 "entry_7": (LogEntry.ID,),
             },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
+            }
         }
 
-    def _path_to_log_file(self, log_directory, logfile):
+    def _path_to_log_file(self, log_directory, logfile, context: execution_context.ExecutionContext):
         if os.path.isabs(logfile):
             return os.path.normpath(os.path.abspath(logfile))
         elif os.path.isabs(log_directory):
             return os.path.normpath(os.path.abspath(os.path.join(log_directory, logfile)))
         elif log_directory:
-            return os.path.normpath(os.path.abspath(os.path.join(comfy_paths.output_directory, log_directory, logfile)))
+            return os.path.normpath(os.path.abspath(os.path.join(comfy_paths.get_output_directory(context.user_hash), log_directory, logfile)))
         else:
-            return os.path.normpath(os.path.abspath(os.path.join(comfy_paths.output_directory, logfile)))
+            return os.path.normpath(os.path.abspath(os.path.join(comfy_paths.get_output_directory(context.user_hash), logfile)))
 
     def _get_tm_format(self, clock_has_24_hours):
         if clock_has_24_hours:
@@ -185,6 +189,8 @@ class DreamLogFile:
 
     def write(self, frame_counter: FrameCounter, log_directory, log_filename, stdout, active, clock_has_24_hours,
               **entries):
+        context = entries["context"]
+        _logfile_state = DreamStateFile("logging", context)
         if not active:
             return ()
         log_entry = None
@@ -195,7 +201,7 @@ class DreamLogFile:
                     log_entry = e
                 else:
                     log_entry = log_entry.merge(e)
-        log_file_path = self._path_to_log_file(log_directory, log_filename)
+        log_file_path = self._path_to_log_file(log_directory, log_filename, context)
         ts = _logfile_state.get_section("timestamps").get(log_file_path, 0)
         output_text = list()
         last_t = 0

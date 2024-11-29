@@ -28,7 +28,7 @@ _NODE_CLASSES: List[Type] = [DreamSineWave, DreamLinear, DreamCSVCurve, DreamBea
                              DreamBigIntSwitch, DreamBigPaletteSwitch, DreamWeightedPromptBuilder, DreamPromptFinalizer,
                              DreamFrameCounterInfo, DreamBoolToFloat, DreamBoolToInt, DreamSawWave, DreamTriangleWave,
                              DreamTriangleEvent, DreamSmoothEvent, DreamCalculation, DreamImageColorShift,
-                             DreamComparePalette, DreamImageContrast, DreamImageBrightness, DreamLogFile,
+                             DreamComparePalette, DreamImageContrast, DreamImageBrightness,
                              DreamLaboratory, DreamStringToLog, DreamIntToLog, DreamFloatToLog, DreamJoinLog,
                              DreamStringTokenizer, DreamWavCurve, DreamFrameCounterTimeOffset]
 _SIGNATURE_SUFFIX = " [Dream]"
@@ -82,6 +82,7 @@ for cls in _NODE_CLASSES:
     clsname = cls.__name__
     if "NODE_NAME" in cls.__dict__:
         node_name = cls.__dict__["NODE_NAME"] + _SIGNATURE_SUFFIX
+        print('**** ' + node_name)
         NODE_CLASS_MAPPINGS[node_name] = cls
         NODE_DISPLAY_NAME_MAPPINGS[node_name] = update_display_name(cls, category_icon,
                                                                     cls.__dict__.get("DISPLAY_NAME",

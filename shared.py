@@ -6,6 +6,7 @@ import os
 import random
 import time
 
+import execution_context
 import folder_paths as comfy_paths
 import glob
 import numpy
@@ -20,7 +21,7 @@ from .embedded_config import EMBEDDED_CONFIGURATION
 
 NODE_FILE = os.path.abspath(__file__)
 DREAM_NODES_SOURCE_ROOT = os.path.dirname(NODE_FILE)
-TEMP_PATH = os.path.join(os.path.abspath(comfy_paths.temp_directory), "Dream_Anim")
+# TEMP_PATH = os.path.join(os.path.abspath(comfy_paths.temp_directory), "Dream_Anim")
 ALWAYS_CHANGED_FLAG = float("NaN")
 
 
@@ -332,8 +333,9 @@ class DreamStateStore:
 
 
 class DreamStateFile:
-    def __init__(self, state_collection_name="state"):
-        self._filepath = os.path.join(TEMP_PATH, state_collection_name+".json")
+    def __init__(self, state_collection_name="state", context: execution_context.ExecutionContext = None):
+        temp_path = os.path.join(os.path.abspath(comfy_paths.get_temp_directory(context.user_hash)), "Dream_Anim")
+        self._filepath = os.path.join(temp_path, state_collection_name+".json")
         self._dirname = os.path.dirname(self._filepath)
         if not os.path.isdir(self._dirname):
             os.makedirs(self._dirname)

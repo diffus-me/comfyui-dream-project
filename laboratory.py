@@ -8,7 +8,7 @@ from .categories import *
 from .shared import ALWAYS_CHANGED_FLAG, DreamStateFile
 from .dreamtypes import *
 
-_laboratory_state = DreamStateFile("laboratory")
+# _laboratory_state = DreamStateFile("laboratory")
 
 
 class DreamLaboratory:
@@ -29,6 +29,9 @@ class DreamLaboratory:
             "optional": {
                 "step_size": ("FLOAT", {"default": 0.1}),
             },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
+            }
         }
 
     CATEGORY = NodeCategories.UTILS
@@ -83,6 +86,8 @@ class DreamLaboratory:
             return max(min_value, last_value - step_size)
 
     def result(self, key, frame_counter: FrameCounter, seed, renew_policy, min_value, max_value, mode, **values):
+        context = values["context"]
+        _laboratory_state = DreamStateFile("laboratory", context)
         if min_value > max_value:
             t = max_value
             max_value = min_value

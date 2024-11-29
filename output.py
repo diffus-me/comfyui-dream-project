@@ -2,6 +2,7 @@
 import json
 import os
 
+import execution_context
 import folder_paths as comfy_paths
 from PIL.PngImagePlugin import PngInfo
 
@@ -35,11 +36,11 @@ class DreamImageSequenceOutput:
     ICON = "💾"
 
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls, context: execution_context.ExecutionContext):
         return {
             "required": SharedTypes.frame_counter | {
                 "image": ("IMAGE",),
-                "directory_path": ("STRING", {"default": comfy_paths.output_directory, "multiline": False}),
+                "directory_path": ("STRING", {"default": comfy_paths.get_output_directory(context.user_hash), "multiline": False}),
                 "prefix": ("STRING", {"default": 'frame', "multiline": False}),
                 "digits": ("INT", {"default": 5}),
                 "at_end": (["stop output", "raise error", "keep going"],),
@@ -47,7 +48,8 @@ class DreamImageSequenceOutput:
             },
             "hidden": {
                 "prompt": "PROMPT",
-                "extra_pnginfo": "EXTRA_PNGINFO"
+                "extra_pnginfo": "EXTRA_PNGINFO",
+                "context": "EXECUTION_CONTEXT"
             },
         }
 
@@ -101,7 +103,7 @@ class DreamImageSequenceOutput:
         log_texts = list()
         logger = lambda s: log_texts.append(s)
         if not args.get("directory_path", ""):
-            args["directory_path"] = comfy_paths.output_directory
+            args["directory_path"] = comfy_paths.get_output_directory(args["context"].user_hash)
         args["logger"] = logger
         proc = DreamImageProcessor(image, **args)
         proc.process(self._save_single_image)
